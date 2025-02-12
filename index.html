@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#2563EB",
+                        secondary: "#1E40AF",
+                        background: "#F9FAFB",
+                    },
+                },
+            },
+        };
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-background text-gray-900">
+
+    <!-- Navbar -->
+    <nav class="bg-gray-900 text-white py-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center px-6">
+            <a class="text-xl font-bold" href="#">All about IPR</a>
+            <ul class="hidden lg:flex space-x-6 text-lg">
+                <li><a href="#home" class="hover:text-blue-400">Home</a></li>
+                <li><a href="#features" class="hover:text-blue-400">Features</a></li>
+                <li><a href="#about-ipr" class="hover:text-blue-400">About IPR</a></li>
+                <li><a href="#documents" class="hover:text-blue-400">Documents</a></li>
+                <li><a href="#government-website" class="hover:text-blue-400">Govt. Website</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="h-screen flex flex-col justify-center items-center text-center bg-gradient-to-r from-primary to-secondary text-white">
+        <h1 class="text-4xl font-bold">Welcome to IPR Filing Assistant</h1>
+        <p class="mt-4 text-lg">Your personal AI-powered chatbot to assist with IPR-related queries!</p>
+        <a href="#" class="mt-6 bg-white text-blue-600 px-6 py-3 rounded-lg text-lg font-semibold hover:bg-gray-200 transition">
+            Get Started
+        </a>
+    </section>
+
+    <!-- Chatbot Floating Icon -->
+    <div id="chatbot-icon" onclick="toggleChat()" class="fixed bottom-6 right-6 bg-primary text-white w-16 h-16 flex items-center justify-center rounded-full text-2xl shadow-lg cursor-pointer hover:bg-secondary transition">
+        💬
+    </div>
+
+    <!-- Chatbot Window -->
+    <div id="chatbot-window" class="hidden fixed bottom-20 right-6 w-96 h-[500px] bg-white rounded-lg shadow-lg flex flex-col">
+        <div class="bg-primary text-white p-3 flex justify-between items-center">
+            <span class="text-lg font-semibold">AI Chatbot</span>
+            <button onclick="toggleChat()" class="text-xl">✖</button>
+        </div>
+        <div id="chat-messages" class="flex flex-col p-4 space-y-2 overflow-y-auto h-80 bg-gray-50">
+            <div class="p-3 rounded-lg bg-gray-300 text-gray-900 w-fit">👋 Hi! How can I assist you today?</div>
+        </div>
+        <div class="p-3 border-t flex items-center">
+            <input id="chat-input" type="text" class="flex-1 p-2 border rounded-lg focus:ring focus:ring-primary" placeholder="Type a message...">
+            <button id="send-btn" class="ml-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <section id="features" class="py-16 bg-gray-50 text-center">
+        <h2 class="text-3xl font-bold text-gray-800">Chatbot Features</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-8">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <i class="fas fa-comments text-blue-500 text-3xl"></i>
+                <p class="mt-4">AI-Powered Conversations</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <i class="fas fa-language text-green-500 text-3xl"></i>
+                <p class="mt-4">Supports 22 Languages</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <i class="fas fa-user-shield text-yellow-500 text-3xl"></i>
+                <p class="mt-4">Secure & Confidential</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- JavaScript -->
+    <script>
+        function toggleChat() {
+            document.getElementById("chatbot-window").classList.toggle("hidden");
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const chatInput = document.getElementById("chat-input");
+            const sendButton = document.getElementById("send-btn");
+            const chatWindow = document.getElementById("chat-messages");
+
+            async function sendMessage() {
+                const userMessage = chatInput.value.trim();
+                if (!userMessage) return;
+
+                addMessage(userMessage, "user");
+                chatInput.value = "";
+
+                try {
+                    const response = await fetch("http://localhost:5000/chat", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ messages: [{ role: "user", content: userMessage }] }),
+                    });
+
+                    const data = await response.json();
+                    typeMessage(data.reply, "bot");
+                } catch (error) {
+                    console.error("Error:", error);
+                    typeMessage("❌ Error connecting to the server. Please try again.", "bot");
+                }
+            }
+
+            function addMessage(message, sender) {
+                const messageDiv = document.createElement("div");
+                messageDiv.className = `p-3 rounded-lg max-w-xs ${
+                    sender === "user" ? "bg-blue-500 text-white ml-auto" : "bg-gray-300 text-gray-900"
+                }`;
+                messageDiv.textContent = message;
+                chatWindow.appendChild(messageDiv);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+
+            function typeMessage(message, sender) {
+                const messageDiv = document.createElement("div");
+                messageDiv.className = `p-3 rounded-lg max-w-xs ${
+                    sender === "bot" ? "bg-gray-300 text-gray-900" : "bg-blue-500 text-white ml-auto"
+                }`;
+                chatWindow.appendChild(messageDiv);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+
+                let index = 0;
+                function type() {
+                    if (index < message.length) {
+                        messageDiv.textContent += message.charAt(index);
+                        index++;
+                        setTimeout(type, 30);
+                    }
+                }
+                type();
+            }
+
+            sendButton.addEventListener("click", sendMessage);
+            chatInput.addEventListener("keypress", (event) => {
+                if (event.key === "Enter") sendMessage();
+            });
+        });
+    </script>
+
+</body>
+</html>
