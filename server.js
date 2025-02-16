@@ -19,6 +19,15 @@ app.post("/chat", async (req, res) => {
         res.json({ reply: response.data.candidates[0].content.parts[0].text || "I'm sorry, I didn't understand that." });
     } catch (error) {
         console.error("API Request Error:", error.message);
+        if (error.response) {
+            console.error("Response data:", error.response.data);
+            console.error("Response status:", error.response.status);
+            console.error("Response headers:", error.response.headers);
+        } else if (error.request) {
+            console.error("Request data:", error.request);
+        } else {
+            console.error("Error message:", error.message);
+        }
         res.status(500).json({ error: "Error communicating with Google Gemini API. Please try again later." });
     }
 });
